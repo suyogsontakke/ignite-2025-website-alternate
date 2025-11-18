@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IGNITE 2025 | The Future of Freshers</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanta/0.5.24/vanta.net.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.7.2/vanilla-tilt.min.js"></script>
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/HkXcxcgX/1758263167091.png">
+    
+    <style>
+        :root {
+            --bg-dark: #0B120E;
+            --bg-light: #111A15;
+            --primary-green: #16FF00;
+            --text-primary: #f8fafc;
+            --glass-bg: rgba(17, 26, 21, 0.65);
+            --glass-border: rgba(22, 255, 0, 0.2);
+        }
+
+        /* 3D Background Layer */
+        #three-js-background {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Utils */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        }
+        
+        .glass-nav {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(22, 255, 0, 0.2);
+        }
+
+        /* Neon & Glitch Effects */
+        .neon-text {
+            color: var(--primary-green);
+            text-shadow: 0 0 15px rgba(22, 255, 0, 0.6);
+        }
+
+        .glitch-text { position: relative; }
+        .glitch-text::before, .glitch-text::after {
+            content: attr(data-text);
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--bg-dark); opacity: 0.8;
+        }
+        .glitch-text::before {
+            left: 2px; text-shadow: -2px 0 #ff00c1; clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-1 5s infinite linear alternate-reverse;
+        }
+        .glitch-text::after {
+            left: -2px; text-shadow: -2px 0 #00fff9; clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-2 5s infinite linear alternate-reverse;
+        }
+        @keyframes glitch-anim-1 {
+            0% { clip: rect(20px, 9999px, 10px, 0); }
+            100% { clip: rect(80px, 9999px, 90px, 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(60px, 9999px, 20px, 0); }
+            100% { clip: rect(10px, 9999px, 50px, 0); }
+        }
+
+        /* Ticket Styles */
+        .movie-ticket {
+            font-family: 'Bebas Neue', cursive;
+            background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
+            border: 1px solid #333;
+            display: flex;
+            box-shadow: 0 15px 35px rgba(22, 255, 0, 0.15);
+        }
+        .ticket-stub {
+            border-left: 2px dashed #444;
+            position: relative;
+        }
+        .ticket-stub::before, .ticket-stub::after {
+            content: ''; position: absolute; left: -10px; width: 20px; height: 20px;
+            background: var(--bg-dark); border-radius: 50%;
+        }
+        .ticket-stub::before { top: -10px; }
+        .ticket-stub::after { bottom: -10px; }
+
+        /* Chat Widget */
+        #chat-window { height: 70vh; max-height: 500px; }
+        .chat-message { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #000; }
+        ::-webkit-scrollbar-thumb { background: var(--primary-green); border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+    <div id="three-js-background"></div>
+
+    <nav class="glass-nav fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <div class="flex-shrink-0">
+                    <a href="#" class="text-4xl font-bold neon-text tracking-wider" style="font-family: 'Bebas Neue', cursive;">IGNITE 2025</a>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-6">
+                        <a href="#booking-section" class="text-gray-300 hover:text-green-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Book Now</a>
+                        <a href="#food-menu" class="text-gray-300 hover:text-green-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Menu</a>
+                        <a href="#social-partner-section" class="text-gray-300 hover:text-green-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Partner</a>
+                        <a href="#video-section" class="text-gray-300 hover:text-green-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Videos</a>
+                        <a href="#team-section" class="text-gray-300 hover:text-green-400 px-3 py-2 rounded-md text-sm font-medium transition-colors">Team</a>
+                        <a href="#connect-section" class="bg-green-600/20 text-green-400 border border-green-500 px-4 py-2 rounded-full text-sm font-bold hover:bg-green-600 hover:text-white transition-all">Connect</a>
+                    </div>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-button" class="text-gray-300 hover:text-white p-2">
+                        <svg class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="md:hidden hidden glass-panel absolute w-full" id="mobile-menu">
+            <div class="px-4 pt-2 pb-4 space-y-2">
+                <a href="#booking-section" class="block text-gray-300 hover:text-white py-2">Book Now</a>
+                <a href="#food-menu" class="block text-gray-300 hover:text-white py-2">Menu</a>
+                <a href="#team-section" class="block text-gray-300 hover:text-white py-2">Team</a>
+                <a href="#connect-section" class="block text-green-400 hover:text-white py-2">Connect</a>
+            </div>
+        </div>
+    </nav>
+    
+    <section id="booking-section" class="relative pt-32 pb-20 min-h-screen flex items-center justify-center">
+        <div class="w-full max-w-6xl mx-auto px-4">
+            <div class="glass-panel rounded-3xl overflow-hidden flex flex-col md:flex-row shadow-2xl" data-aos="zoom-in" data-aos-duration="1000">
+                
+                <div class="w-full md:w-5/12 bg-black/40 p-8 sm:p-12 flex flex-col justify-center relative">
+                    <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-green-900/20 to-transparent pointer-events-none"></div>
+                    
+                    <h1 class="text-5xl sm:text-7xl font-bold mb-2 text-white glitch-text" data-text="IGNITE 2025" style="font-family: 'Bebas Neue', cursive;">IGNITE 2025</h1>
+                    <p class="text-green-400 font-mono text-lg mb-6 tracking-widest">🚀 Igniting the vibe</p>
+                    <p class="text-gray-300 mb-8 leading-relaxed">The ultimate welcome to the new era. Secure your spot now.</p>
+                    
+                    <div class="space-y-4 font-mono text-sm text-gray-300">
+                        <div class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/10">
+                            <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <span>DATE: 14TH OCTOBER</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/10">
+                            <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>TIME: 11:00 AM - 06:00 PM</span>
+                        </div>
+                        <div class="flex items-center gap-3 bg-white/5 p-3 rounded-lg border border-white/10">
+                            <svg class="h-5 w-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            <span>LOC: <a href="https://maps.app.goo.gl/drWZccCjp3gZsnsY7" target="_blank" class="text-green-400 hover:underline">RAASTA NAGPUR🌴</a></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="w-full md:w-7/12 p-8 sm:p-12 bg-gradient-to-br from-gray-900 to-black flex items-center">
+                    <div class="w-full">
+                        <h2 class="text-2xl font-bold text-white mb-6 border-l-4 border-green-500 pl-3">INITIALIZE REGISTRATION</h2>
+                        <form id="registrationForm" class="space-y-5">
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Identity</label>
+                                <input type="text" name="name" required placeholder="Full Name" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Comms</label>
+                                <input type="email" name="email" required placeholder="Email Address" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">Frequency</label>
+                                <input type="tel" name="mobile" required pattern="[0-9]{10}" maxlength="10" placeholder="Mobile Number (10 Digits)" class="w-full bg-gray-800/50 border border-gray-700 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all">
+                            </div>
+                            <div class="hidden">
+                                <select name="ticketType"><option value="General Admission">Freshers Pass (₹800)</option></select>
+                            </div>
+                            
+                            <button type="submit" class="group w-full bg-green-600 hover:bg-green-500 text-black font-bold py-4 rounded-lg transition-all transform hover:scale-[1.02] shadow-[0_0_20px_rgba(22,255,0,0.3)] flex justify-center items-center gap-2">
+                                <span>SECURE ACCESS PASS (₹800)</span>
+                                <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="venue-section" class="py-24 relative">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-5xl font-bold text-white neon-text mb-4" style="font-family: 'Bebas Neue';">THE MAINFRAME: RAASTA🌴</h2>
+                <p class="text-gray-400 max-w-2xl mx-auto">Experience the electrifying atmosphere of our official venue partner.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-7 glass-panel rounded-2xl p-2" data-tilt data-tilt-glare data-tilt-max-glare="0.3" data-aos="fade-right">
+                    <div class="rounded-xl overflow-hidden aspect-video relative group">
+                        <video class="w-full h-full object-cover" src="videos/raasta.mp4" autoplay loop muted playsinline></video>
+                    </div>
+                </div>
+                
+                <div class="lg:col-span-5 space-y-6" data-aos="fade-left">
+                    <div class="glass-panel p-6 rounded-xl border-l-4 border-green-500" data-tilt>
+                        <img src="https://i.postimg.cc/5Np2vjZT/image.png" alt="Raasta Logo" class="h-20 mb-4 filter invert brightness-0 invert-100">
+                        <p class="text-gray-300 text-sm leading-relaxed">Raasta Nagpur is a fine-dining rooftop restaurant and bar located in the Dharampeth Extension area. Known for modern ambiance and Caribbean-themed cuisine.</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                         <div class="glass-panel p-2 rounded-lg overflow-hidden" data-tilt><img src="https://i.postimg.cc/ZKMsnzT3/raastanagpur-14040630-033851178.jpg" class="rounded w-full h-32 object-cover hover:scale-110 transition-transform"></div>
+                         <div class="glass-panel p-2 rounded-lg overflow-hidden" data-tilt><img src="https://i.postimg.cc/SNJVw1WK/raastanagpur-14040630-034303014.jpg" class="rounded w-full h-32 object-cover hover:scale-110 transition-transform"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="food-menu" class="py-24">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-5xl font-bold text-white neon-text" style="font-family: 'Bebas Neue';">SYSTEM FUEL</h2>
+                <p class="text-gray-400">Unlimited data packets for your biological engine.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="glass-panel rounded-xl overflow-hidden group relative h-96" data-tilt data-aos="flip-left" data-aos-delay="100">
+                    <img src="https://img.freepik.com/free-photo/young-adults-enjoying-food_23-2149303535.jpg" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                    <div class="absolute bottom-0 p-6 w-full">
+                        <h3 class="text-3xl font-bold text-white mb-2" style="font-family: 'Bebas Neue';">STARTERS</h3>
+                        <ul class="space-y-2 text-gray-300 text-sm transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                            <li class="flex items-center gap-2"><div class="w-2 h-2 bg-green-500 rounded-full"></div>Chilli Paneer</li>
+                            <li class="flex items-center gap-2"><div class="w-2 h-2 bg-green-500 rounded-full"></div>Hara Bhara Kabab</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-xl overflow-hidden group relative h-96" data-tilt data-aos="flip-left" data-aos-delay="200">
+                    <img src="https://sukhis.com/app/uploads/2022/05/image2-3-1024x684.jpg" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                    <div class="absolute bottom-0 p-6 w-full">
+                        <h3 class="text-3xl font-bold text-white mb-2" style="font-family: 'Bebas Neue';">MAIN COURSE</h3>
+                        <ul class="space-y-2 text-gray-300 text-sm transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                            <li class="flex items-center gap-2"><div class="w-2 h-2 bg-green-500 rounded-full"></div>Kadhai Panir & Mix Veg</li>
+                            <li class="flex items-center gap-2"><div class="w-2 h-2 bg-green-500 rounded-full"></div>Dal Tadka & Jeera Rice</li>
+                            <li class="flex items-center gap-2"><div class="w-2 h-2 bg-green-500 rounded-full"></div>Butter Roti / Naan</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-xl overflow-hidden group relative h-96" data-tilt data-aos="flip-left" data-aos-delay="300">
+                    <img src="https://www.brit.co/media-library/3-ingredient-dessert-recipes.jpg?id=23305200&width=300" class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-40 transition-opacity">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent"></div>
+                    <div class="absolute bottom-0 p-6 w-full">
+                        <h3 class="text-3xl font-bold text-white mb-2" style="font-family: 'Bebas Neue';">DESSERTS</h3>
+                        <ul class="space-y-2 text-gray-300 text-sm transform translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
+                            <li class="flex items-center gap-2"><div class="w-2 h-2 bg-green-500 rounded-full"></div>Brownie with Vanilla Ice Cream</li>
+                            <li class="flex items-center gap-2"><div class="w-2 h-2 bg-green-500 rounded-full"></div>Assorted Mocktails</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="max-w-4xl mx-auto mt-12 glass-panel p-8 rounded-xl text-center" data-aos="fade-up">
+                <h3 class="text-2xl font-bold text-green-400 mb-4" style="font-family: 'Bebas Neue';">PROTOCOL RULES</h3>
+                <div class="flex justify-center gap-12">
+                    <div class="flex flex-col items-center">
+                        <img src="https://i.postimg.cc/0NDwsP3n/remove-photos-removed-background.png" class="h-20 w-20 mb-2">
+                        <p>No Smoking</p>
+                    </div>
+                    <div class="flex flex-col items-center">
+                        <img src="https://i.postimg.cc/VNLS0nHS/brightened-image-remove-photos.png" class="h-20 w-20 mb-2">
+                        <p>No Liquor</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="social-partner-section" class="py-24 border-t border-white/5">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-5xl font-bold text-white neon-text" style="font-family: 'Bebas Neue';">SOCIAL PARTNER</h2>
+            <p class="text-gray-400 mt-2">Proudly collaborating with the pulse of the city!</p>
+            
+            <div class="mt-12 glass-panel rounded-2xl p-8 flex flex-col md:flex-row items-center gap-8 transform hover:scale-105 transition-all" data-tilt>
+                <img class="w-32 h-32 md:w-40 md:h-40 rounded-full border-4 border-green-500 object-cover" src="https://i.postimg.cc/gJPqDpgf/395545865-830278615558115-1191238985563505280-n.jpg" alt="Nagpur Party Update">
+                <div class="text-center md:text-left flex-1">
+                    <h2 class="text-3xl text-white font-bold">nagpurpartyupdate</h2>
+                    <p class="text-green-400 mb-4">Official Social Media Partner</p>
+                    <div class="flex justify-center md:justify-start gap-6 my-4 font-mono text-sm">
+                        <div><span class="font-bold text-white block text-lg">39.6K</span> followers</div>
+                        <div><span class="font-bold text-white block text-lg">148</span> posts</div>
+                    </div>
+                    <p class="text-gray-300 text-sm mb-4">Your gateway to the most exclusive underground parties and events in Nagpur.</p>
+                    <a href="https://www.instagram.com/nagpurpartyupdate/" target="_blank" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-full font-bold hover:bg-blue-500 transition">Follow on Instagram</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="video-section" class="py-24 border-t border-white/5">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-5xl font-bold text-white neon-text" style="font-family: 'Bebas Neue';">EVENT GLIMPSES</h2>
+                <p class="text-gray-400">Feel the vibe of what's coming.</p>
+            </div>
+            <div class="grid gap-8 grid-cols-1 md:grid-cols-2">
+                <div class="glass-panel rounded-2xl p-2" data-tilt data-aos="fade-right">
+                    <div class="aspect-[9/16] rounded-xl overflow-hidden">
+                        <video class="w-full h-full object-cover" src="videos/promo1.mp4" autoplay loop muted playsinline></video>
+                    </div>
+                </div>
+                <div class="glass-panel rounded-2xl p-2" data-tilt data-aos="fade-left">
+                    <div class="aspect-[9/16] rounded-xl overflow-hidden">
+                        <video class="w-full h-full object-cover" src="videos/promo2.mp4" autoplay loop muted playsinline></video>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="team-section" class="py-24">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <h2 class="text-5xl font-bold text-white neon-text" style="font-family: 'Bebas Neue';">CORE PROCESSORS</h2>
+                <p class="text-gray-400">The minds executing the protocol.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                
+                <div class="glass-panel rounded-xl p-4 text-center group hover:border-green-500/50 transition-all" data-tilt data-tilt-max="10" data-aos="fade-up">
+                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-green-500 mb-4 relative">
+                        <img src="https://i.postimg.cc/ZngX8yFx/IMG-20250919-020753.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <h4 class="text-xl font-bold text-white">Suyog Sontakke</h4>
+                    <p class="text-xs text-green-400 font-mono mb-3">IGNITE CORE TEAM</p>
+                    <a href="https://www.instagram.com/suyog_sontakke/" target="_blank" class="text-gray-400 hover:text-white transition-colors text-sm">@suyog_sontakke</a>
+                </div>
+
+                <div class="glass-panel rounded-xl p-4 text-center group hover:border-green-500/50 transition-all" data-tilt data-tilt-max="10" data-aos="fade-up">
+                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-600 mb-4 relative">
+                        <img src="https://i.postimg.cc/k5pGtTRV/IMG-20250919-WA0006.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <h4 class="text-xl font-bold text-white">Shivam Dharvaiya</h4>
+                    <p class="text-xs text-green-400 font-mono mb-3">IGNITE CORE TEAM</p>
+                    <a href="https://www.instagram.com/shivaay___07_/" target="_blank" class="text-gray-400 hover:text-white transition-colors text-sm">@shivaay___07_</a>
+                </div>
+
+                <div class="glass-panel rounded-xl p-4 text-center group hover:border-green-500/50 transition-all" data-tilt data-tilt-max="10" data-aos="fade-up">
+                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-600 mb-4 relative">
+                        <img src="https://i.postimg.cc/26D3CVsy/IMG-20250919-015256.jpg" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                    </div>
+                    <h4 class="text-xl font-bold text-white">Harsh Fulzele</h4>
+                    <p class="text-xs text-green-400 font-mono mb-3">IGNITE CORE TEAM</p>
+                    <a href="https://www.instagram.com/harshfulzele_09/" target="_blank" class="text-gray-400 hover:text-white transition-colors text-sm">@harshfulzele_09</a>
+                </div>
+
+                <div class="glass-panel rounded-xl p-4 text-center group" data-tilt data-tilt-max="10" data-aos="fade-up">
+                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-600 mb-4">
+                        <img src="https://i.postimg.cc/KYDVqYyB/IMG-20250914-WA0058.jpg" class="w-full h-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-bold text-white">Nirmala Mishra</h4>
+                    <p class="text-xs text-green-400 font-mono mb-3">IGNITE CORE TEAM</p>
+                </div>
+
+                <div class="glass-panel rounded-xl p-4 text-center group" data-tilt data-tilt-max="10" data-aos="fade-up">
+                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-600 mb-4">
+                        <img src="https://i.postimg.cc/xTw2wWDT/IMG-20250919-015328.jpg" class="w-full h-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-bold text-white">Teena Mahule</h4>
+                    <p class="text-xs text-green-400 font-mono mb-3">IGNITE CORE TEAM</p>
+                </div>
+
+                <div class="glass-panel rounded-xl p-4 text-center group" data-tilt data-tilt-max="10" data-aos="fade-up">
+                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-600 mb-4">
+                        <img src="https://i.postimg.cc/t4sL4Dbv/IMG-20250919-015422.jpg" class="w-full h-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-bold text-white">Stuti Samarth</h4>
+                    <p class="text-xs text-green-400 font-mono mb-3">IGNITE CORE TEAM</p>
+                </div>
+
+                <div class="glass-panel rounded-xl p-4 text-center group" data-tilt data-tilt-max="10" data-aos="fade-up">
+                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-600 mb-4">
+                        <img src="https://i.postimg.cc/YqW9LNt0/IMG-20250919-WA0009.jpg" class="w-full h-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-bold text-white">Om Nimbalkar</h4>
+                    <p class="text-xs text-green-400 font-mono mb-3">IGNITE CORE TEAM</p>
+                    <a href="https://www.instagram.com/om_nimbalkar09/" target="_blank" class="text-gray-400 hover:text-white text-sm">@om_nimbalkar09</a>
+                </div>
+
+                <div class="glass-panel rounded-xl p-4 text-center group" data-tilt data-tilt-max="10" data-aos="fade-up">
+                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-600 mb-4">
+                        <img src="https://i.postimg.cc/B6MHjTct/1000085893.webp" class="w-full h-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-bold text-white">Ziyauddin Ansari</h4>
+                    <p class="text-xs text-green-400 font-mono mb-3">IGNITE CORE TEAM</p>
+                    <a href="https://www.instagram.com/ziya__x09/" target="_blank" class="text-gray-400 hover:text-white text-sm">@ziya__x09</a>
+                </div>
+
+                <div class="glass-panel rounded-xl p-4 text-center group" data-tilt data-tilt-max="10" data-aos="fade-up">
+                    <div class="w-32 h-32 mx-auto rounded-full overflow-hidden border-2 border-gray-600 mb-4">
+                        <img src="https://i.postimg.cc/YCjLgQB5/the-hitesh-jambhulkar-1743256752-3599020955046090278-41313794862.webp" class="w-full h-full object-cover">
+                    </div>
+                    <h4 class="text-xl font-bold text-white">Hitesh Jambhulkar</h4>
+                    <p class="text-xs text-green-400 font-mono mb-3">IGNITE CORE TEAM</p>
+                    <a href="https://www.instagram.com/the_hitesh_jambhulkar/" target="_blank" class="text-gray-400 hover:text-white text-sm">@the_hitesh_jambhulkar</a>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="connect-section" class="border-t border-white/10 bg-black/80 backdrop-blur-md pt-12">
+        <div class="max-w-6xl mx-auto px-4 text-center pb-12">
+             <h2 class="text-3xl font-bold text-white mb-6" style="font-family: 'Bebas Neue';">JOIN THE NETWORK</h2>
+             
+             <div class="flex flex-wrap justify-center gap-4 mb-8">
+                 <a href="https://chat.whatsapp.com/ELCYBj5J7jhJPUbde2TOjT" target="_blank" class="bg-green-600 hover:bg-green-500 text-black font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 flex items-center gap-2">
+                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12.04 2c-5.46 0-9.91 4.45-9.91 9.91 0 1.75.46 3.45 1.32 4.95L2 22l5.25-1.38c1.45.79 3.08 1.21 4.79 1.21 5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2z"></path></svg> WhatsApp Group
+                 </a>
+                 <a href="https://www.instagram.com/ignite2025official/" target="_blank" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold py-3 px-8 rounded-full transition-all transform hover:scale-105 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.85s-.011 3.584-.069 4.85c-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07s-3.584-.012-4.85-.07c-3.252-.148-4.771-1.691-4.919-4.919-.058-1.265-.069-1.645-.069-4.85s.011-3.584.069-4.85c.149-3.225 1.664-4.771 4.919-4.919C8.416 2.175 8.796 2.163 12 2.163zm0 1.441c-3.111 0-3.483.011-4.691.068-2.61.121-3.832 1.343-3.953 3.953-.057 1.208-.067 1.578-.067 4.691s.01 3.483.067 4.691c.121 2.61 1.343 3.832 3.953 3.953 1.208.057 1.578.067 4.691.067s3.483-.01 4.691-.067c2.61-.121 3.832-1.343 3.953-3.953.057-1.208.067-1.578.067-4.691s-.01-3.483-.067-4.691c-.121-2.61-1.343-3.832-3.953-3.953-1.208-.057-1.578-.067-4.691-.067zM12 8.118c-2.141 0-3.882 1.741-3.882 3.882s1.741 3.882 3.882 3.882 3.882-1.741 3.882-3.882S14.141 8.118 12 8.118zm0 6.363c-1.37 0-2.482-1.112-2.482-2.482s1.112-2.482 2.482-2.482 2.482 1.112 2.482 2.482-1.112 2.482-2.482 2.482zm6.262-6.953c-.768 0-1.39.622-1.39 1.39s.622 1.39 1.39 1.39 1.39-.622 1.39-1.39-.622-1.39-1.39-1.39z"/></svg> @ignite2025official
+                </a>
+             </div>
+
+             <div class="mt-8">
+                 <h3 class="text-xl font-bold text-gray-200 mb-4 font-mono">ADMIN CONTACT UPLINK</h3>
+                 <div class="flex flex-wrap justify-center gap-4">
+                     <a href="https://wa.me/919322408490?text=Hello%2C%20I%20have%20a%20query%20regarding%20IGNITE%202025." target="_blank" class="border border-green-600 text-green-400 px-6 py-2 rounded-lg hover:bg-green-600 hover:text-white transition">Suyog Sontakke</a>
+                     <a href="https://wa.me/918308443834?text=Hello%2C%20I%20have%20a%20query%20regarding%20IGNITE%202025." target="_blank" class="border border-green-600 text-green-400 px-6 py-2 rounded-lg hover:bg-green-600 hover:text-white transition">Om Nimbalkar</a>
+                     <a href="https://wa.me/917499601816?text=Hello%2C%20I%20have%20a%20query%20regarding%20IGNITE%202025." target="_blank" class="border border-green-600 text-green-400 px-6 py-2 rounded-lg hover:bg-green-600 hover:text-white transition">Shivam Dharvaiya</a>
+                 </div>
+             </div>
+        </div>
+
+        <div class="w-full h-64 md:h-80 filter grayscale hover:grayscale-0 transition-all duration-500">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3721.360594616081!2d79.0583477!3d21.1380433!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bd4c118e88f8477%3A0xb1a3edb37d9d4feb!2sRaasta%20Nagpur!5e0!3m2!1sen!2sin!4v1761490855556!5m2!1sen!2sin" class="w-full h-full border-0" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+        
+        <div class="bg-black py-6 text-center">
+             <p class="text-gray-500 text-sm">© 2025 Suyog Sontakke. All Rights Reserved.</p>
+        </div>
+    </section>
+
+    <div id="notificationModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-[100] hidden">
+        <div class="glass-panel rounded-2xl max-w-sm w-full p-8 text-center">
+            <div id="modalIcon" class="mb-4 text-4xl"></div>
+            <h3 id="modalTitle" class="text-2xl font-bold text-white font-mono">SYSTEM ALERT</h3>
+            <p id="modalMessage" class="text-gray-300 mt-2 mb-6"></p>
+            <button id="modalCloseBtn" class="bg-green-600 text-white font-bold py-2 px-6 rounded hover:bg-green-700 w-full">ACKNOWLEDGE</button>
+        </div>
+    </div>
+
+    <div id="ticketModal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-[100] hidden">
+        <div class="w-full max-w-lg relative">
+            <button id="closeTicketModalBtn" class="absolute -top-4 -right-4 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center z-10 hover:bg-red-600">×</button>
+            <div class="glass-panel p-4 rounded-xl max-h-[90vh] overflow-y-auto">
+                <div id="ticket-to-download" class="movie-ticket rounded-lg overflow-hidden text-white">
+                    <div class="p-6 flex-grow border-r-2 border-dashed border-gray-600">
+                        <h2 class="text-4xl text-green-500 mb-1">IGNITE 2025</h2>
+                        <p class="text-xs tracking-[0.3em] text-gray-400 mb-6">ACCESS GRANTED</p>
+                        <div class="mb-4"><p class="text-[10px] text-gray-500 uppercase">Attendee</p><p id="modalTicketName" class="text-2xl font-bold truncate">USER</p></div>
+                        <div><p class="text-[10px] text-gray-500 uppercase">Type</p><p id="modalTicketTypeDetail" class="text-lg text-green-400">PASS</p></div>
+                    </div>
+                    <div class="ticket-stub w-32 bg-[#111] flex flex-col items-center justify-center p-2">
+                        <canvas id="modalQrCodeCanvas" class="w-20 h-20 bg-white p-1 mb-2 rounded"></canvas>
+                        <p id="modalTicketIdStub" class="text-[10px] text-gray-500 font-mono"></p>
+                    </div>
+                </div>
+                
+                <div id="receipt-to-download" class="bg-white text-black p-6 rounded-lg mt-4 font-mono text-sm hidden">
+                    <div class="border-b-2 border-black pb-2 mb-2 flex justify-between"><strong>RECEIPT</strong><span id="modalReceiptDate"></span></div>
+                    <div class="mb-4"><p><strong>BILL TO:</strong> <span id="modalReceiptName"></span></p><p id="modalReceiptEmail" class="text-xs text-gray-600"></p></div>
+                    <div class="flex justify-between mb-2"><span id="modalReceiptDescription">Item</span><span id="modalReceiptAmount">0.00</span></div>
+                    <div class="border-t-2 border-black pt-2 flex justify-between text-lg font-bold"><span>TOTAL</span><span id="modalReceiptTotal">0.00</span></div>
+                    <div class="mt-4 text-center text-green-600 border-2 border-green-600 inline-block px-2 py-1 transform -rotate-6 font-bold text-xl opacity-50">PAID</div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 gap-2">
+                    <button id="downloadTicketBtn" class="bg-green-600 text-white font-bold py-3 rounded hover:bg-green-700">DOWNLOAD TICKET</button>
+                    <button id="downloadPdfBtn" class="bg-gray-700 text-white font-bold py-3 rounded hover:bg-gray-600">DOWNLOAD PDF (Ticket + Receipt)</button>
+                    <button id="downloadReceiptBtn" class="bg-gray-800 text-white font-bold py-3 rounded hover:bg-gray-700">DOWNLOAD RECEIPT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="chat-widget" class="fixed bottom-5 right-5 z-[90]">
+        <div id="ask-help-popup" class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-green-600 text-white text-xs font-bold py-1 px-3 rounded-full shadow-lg whitespace-nowrap animate-bounce">Ask Dolly 🤖</div>
+        <button id="chat-bubble" class="w-16 h-16 rounded-full shadow-[0_0_20px_rgba(22,255,0,0.4)] overflow-hidden border-2 border-green-500 hover:scale-110 transition-transform bg-black">
+            <img src="https://i.postimg.cc/Qdr8NTT1/17570841314-1.png" class="w-full h-full object-cover">
+        </button>
+        <div id="chat-window" class="absolute bottom-20 right-0 w-80 glass-panel rounded-xl hidden flex-col overflow-hidden border border-green-500/30">
+            <div class="bg-green-900/80 p-4 flex items-center gap-3 border-b border-green-500/20">
+                <img src="https://i.postimg.cc/Qdr8NTT1/17570841314-1.png" class="w-8 h-8 rounded-full border border-green-400">
+                <div><h3 class="font-bold text-white text-sm">Dolly AI</h3><p class="text-[10px] text-green-300">Online</p></div>
+            </div>
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-3 text-sm"></div>
+            <form id="chat-form" class="p-3 bg-black/40 border-t border-white/10 flex gap-2">
+                <input type="text" id="chat-input" class="flex-1 bg-transparent border border-gray-600 rounded-full px-3 py-1 text-white focus:border-green-500 focus:outline-none text-sm" placeholder="Type a message...">
+                <button type="submit" class="text-green-500 hover:text-white"><svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg></button>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // --- Firebase Config ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAPd9loQiNnouyKtxfwv-s7jcPzpZKmhys",
+            authDomain: "ignite-event-2025-nagpur.firebaseapp.com",
+            projectId: "ignite-event-2025-nagpur",
+            storageBucket: "ignite-event-2025-nagpur.appspot.com",
+            messagingSenderId: "480552824914",
+            appId: "1:480552824914:web:d67e8c9f208c67ac7fef8b",
+            measurementId: "G-RLPWDK8MR2"
+        };
+
+        let db, auth, currentAttendeeData = null;
+
+        // --- UI Logic ---
+        const els = {
+            form: document.getElementById('registrationForm'),
+            notifModal: document.getElementById('notificationModal'),
+            ticketModal: document.getElementById('ticketModal'),
+            chatBubble: document.getElementById('chat-bubble'),
+            chatWindow: document.getElementById('chat-window'),
+            chatMsgs: document.getElementById('chat-messages'),
+            chatForm: document.getElementById('chat-form'),
+            chatInput: document.getElementById('chat-input')
+        };
+
+        // Initialize Firebase
+        async function initApp() {
+            try {
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                await signInAnonymously(auth);
+            } catch(e) { console.error("Firebase Error", e); }
+        }
+
+        // Payment Logic
+        els.form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            if(!db) return showNotif("System Error", "Database offline.", "error");
+            
+            const formData = new FormData(e.target);
+            const data = {
+                name: formData.get('name').trim(),
+                email: formData.get('email').trim().toLowerCase(),
+                mobile: formData.get('mobile').trim(),
+                ticketType: "General Admission",
+                amount: 80000 // ₹800.00
+            };
+
+            const options = {
+                "key": "rzp_test_RCthJa2Mqp2sit", // Keeping your test key
+                "amount": data.amount,
+                "currency": "INR",
+                "name": "IGNITE 2025",
+                "description": "Freshers Access Pass",
+                "theme": { "color": "#16FF00" },
+                "handler": async function (response) {
+                    try {
+                        const docRef = await addDoc(collection(db, 'pending_registrations'), {
+                            ...data,
+                            paymentId: response.razorpay_payment_id,
+                            registeredAt: serverTimestamp()
+                        });
+                        
+                        els.form.reset();
+                        currentAttendeeData = { ...data, docId: docRef.id, paymentId: response.razorpay_payment_id, ticketTypeFullText: "Freshers Pass (₹800)" };
+                        showTicketModal(currentAttendeeData);
+                        
+                        // Attempt Email Trigger (Backend dependent)
+                        fetch('/api/send-email', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ name: data.name, email: data.email, ticketId: docRef.id })
+                        }).catch(err => console.log("Email trigger failed (expected if no backend)"));
+
+                    } catch (err) {
+                        showNotif("Write Error", "Payment success but data save failed.", "error");
+                    }
+                },
+                "prefill": { "name": data.name, "email": data.email, "contact": data.mobile }
+            };
+            const rzp = new Razorpay(options);
+            rzp.open();
+        });
+
+        // Helper Functions
+        function showNotif(title, msg, type) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = msg;
+            document.getElementById('modalIcon').innerHTML = type === 'error' ? '❌' : '✅';
+            els.notifModal.classList.remove('hidden');
+        }
+
+        function showTicketModal(data) {
+            document.getElementById('modalTicketName').innerText = data.name;
+            document.getElementById('modalTicketIdStub').innerText = `ID: ${data.docId.substring(0,8).toUpperCase()}`;
+            document.getElementById('modalReceiptName').innerText = data.name;
+            document.getElementById('modalReceiptEmail').innerText = data.email;
+            document.getElementById('modalReceiptTotal').innerText = `₹${(data.amount/100).toFixed(2)}`;
+            
+            new QRious({
+                element: document.getElementById('modalQrCodeCanvas'),
+                value: JSON.stringify({ id: data.docId, name: data.name }),
+                size: 100
+            });
+
+            // Temporarily show receipt div to generate PDF content, then hide
+            document.getElementById('receipt-to-download').classList.remove('hidden');
+            els.ticketModal.classList.remove('hidden');
+        }
+
+        // Chatbot Logic (Dolly)
+        const systemPrompt = "You are Dolly, a Nagpuri AI assistant for IGNITE 2025. Use slang like 'Hao', 'Bhau', 'Mama'. Be helpful. Venue: Raasta Nagpur. Ticket: 800rs.";
+        let chatHistory = [];
+        
+        els.chatForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userMsg = els.chatInput.value.trim();
+            if(!userMsg) return;
+            
+            addChatMsg(userMsg, 'user');
+            els.chatInput.value = '';
+            
+            // Simulation of API call (Replace with real key if you have one)
+            const apiKey = "AIzaSyCAaRME9x9uqcfqK_cmPSBK-hZ4ESY5Q4w"; 
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [...chatHistory, { role: "user", parts: [{ text: userMsg }] }], systemInstruction: { parts: [{ text: systemPrompt }] } })
+                });
+                const data = await res.json();
+                const botMsg = data.candidates?.[0]?.content?.parts?.[0]?.text || "Server busy, bhau!";
+                addChatMsg(botMsg, 'bot');
+                chatHistory.push({ role: "user", parts: [{ text: userMsg }] });
+                chatHistory.push({ role: "model", parts: [{ text: botMsg }] });
+            } catch(err) {
+                addChatMsg("Network issue, bhau! Try later.", 'bot');
+            }
+        });
+
+        function addChatMsg(msg, role) {
+            const div = document.createElement('div');
+            div.className = `p-2 rounded-lg max-w-[85%] text-sm ${role === 'user' ? 'bg-green-600 text-white self-end ml-auto' : 'bg-gray-700 text-gray-200 self-start'}`;
+            div.innerHTML = msg;
+            els.chatMsgs.appendChild(div);
+            els.chatMsgs.scrollTop = els.chatMsgs.scrollHeight;
+        }
+
+        // Event Listeners
+        document.getElementById('modalCloseBtn').onclick = () => els.notifModal.classList.add('hidden');
+        document.getElementById('closeTicketModalBtn').onclick = () => els.ticketModal.classList.add('hidden');
+        els.chatBubble.onclick = () => { els.chatWindow.classList.toggle('hidden'); els.chatWindow.classList.toggle('flex'); document.getElementById('ask-help-popup').classList.add('hidden'); };
+        
+        // Download Logic
+        document.getElementById('downloadTicketBtn').onclick = async () => {
+            const canvas = await html2canvas(document.getElementById('ticket-to-download'), { scale: 2, backgroundColor: '#111' });
+            const link = document.createElement('a');
+            link.download = 'IGNITE-TICKET.jpg';
+            link.href = canvas.toDataURL('image/jpeg');
+            link.click();
+        };
+        
+        document.getElementById('downloadReceiptBtn').onclick = async () => {
+            const element = document.getElementById('receipt-to-download');
+            element.classList.remove('hidden');
+            const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
+            element.classList.add('hidden');
+            const link = document.createElement('a');
+            link.download = 'IGNITE-RECEIPT.jpg';
+            link.href = canvas.toDataURL('image/jpeg');
+            link.click();
+        };
+
+        document.getElementById('downloadPdfBtn').onclick = async () => {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF();
+            
+            const ticketCanvas = await html2canvas(document.getElementById('ticket-to-download'), { scale: 2 });
+            
+            const receiptEl = document.getElementById('receipt-to-download');
+            receiptEl.classList.remove('hidden');
+            const receiptCanvas = await html2canvas(receiptEl, { scale: 2 });
+            receiptEl.classList.add('hidden');
+            
+            pdf.addImage(ticketCanvas.toDataURL('image/png'), 'PNG', 10, 10, 190, 80);
+            pdf.addImage(receiptCanvas.toDataURL('image/png'), 'PNG', 10, 100, 190, 100);
+            pdf.save('IGNITE-PASS.pdf');
+        };
+
+        // Mobile Menu
+        document.getElementById('mobile-menu-button').onclick = () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        };
+
+        initApp();
+    </script>
+
+    <script>
+        // 1. Initialize AOS (Scroll Animations)
+        AOS.init({ once: true, offset: 50, duration: 800 });
+
+        // 2. Initialize Vanta.js (3D Background)
+        // Note: This requires WebGL support in the browser
+        document.addEventListener("DOMContentLoaded", function() {
+            try {
+                VANTA.NET({
+                    el: "#three-js-background",
+                    mouseControls: true,
+                    touchControls: true,
+                    gyroControls: false,
+                    minHeight: 200.00,
+                    minWidth: 200.00,
+                    scale: 1.00,
+                    scaleMobile: 1.00,
+                    color: 0x16FF00,       // Neon Green
+                    backgroundColor: 0x0B120E, // Dark Green/Black
+                    points: 10.00,         // Lower points for performance on mobile
+                    maxDistance: 22.00,
+                    spacing: 18.00
+                })
+            } catch(e) {
+                console.log("Vanta JS failed to load (likely due to local file restrictions). Background will remain dark.");
+            }
+        });
+
+        // 3. Initialize Vanilla Tilt (3D Hover Effects)
+        VanillaTilt.init(document.querySelectorAll(".glass-panel"), {
+            max: 10,
+            speed: 400,
+            glare: true,
+            "max-glare": 0.2,
+        });
+    </script>
+</body>
+</html>
