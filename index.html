@@ -93,13 +93,15 @@
             100% { clip: rect(10px, 9999px, 50px, 0); }
         }
 
-        /* Ticket Styles */
+        /* Ticket Styles - Optimized for PDF/Image Gen */
         .movie-ticket {
             font-family: 'Bebas Neue', cursive;
             background: linear-gradient(135deg, #1a1a1a, #0d0d0d);
             border: 1px solid #333;
             display: flex;
             box-shadow: 0 15px 35px rgba(22, 255, 0, 0.15);
+            position: relative; /* Ensure stacking context */
+            z-index: 10;
         }
         .ticket-stub {
             border-left: 2px dashed #444;
@@ -469,7 +471,7 @@
         </div>
         
         <div class="bg-black py-6 text-center">
-             <p class="text-gray-500 text-sm">© 2025 Suyog Sontakke. All Rights Reserved.</p>
+             <p class="text-gray-500 text-sm">© 2025 Suyog Sontakke. All Rights Reserved. Coded with <span class="text-green-500">❤</span> & <span class="text-green-500">AI</span>.</p>
         </div>
     </section>
 
@@ -605,16 +607,16 @@
                         
                         els.form.reset();
                         currentAttendeeData = { ...data, docId: docRef.id, paymentId: response.razorpay_payment_id, ticketTypeFullText: "Freshers Pass (₹800)" };
+                        
+                        // FIX 2: Show modal immediately, do NOT auto-download which crashes on mobile
                         showTicketModal(currentAttendeeData);
                         
-                        // Attempt Email Trigger (Backend dependent)
-                        fetch('/api/send-email', {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ name: data.name, email: data.email, ticketId: docRef.id })
-                        }).catch(err => console.log("Email trigger failed (expected if no backend)"));
+                        // FIX 3: Commented out Ghost API to prevent 404 errors
+                        /* fetch('/api/send-email', { ... }); */
 
                     } catch (err) {
-                        showNotif("Write Error", "Payment success but data save failed.", "error");
+                        showNotif("Write Error", "Payment success but data save failed. Check console.", "error");
+                        console.error(err);
                     }
                 },
                 "prefill": { "name": data.name, "email": data.email, "contact": data.mobile }
@@ -692,39 +694,66 @@
         els.chatBubble.onclick = () => { els.chatWindow.classList.toggle('hidden'); els.chatWindow.classList.toggle('flex'); document.getElementById('ask-help-popup').classList.add('hidden'); };
         
         // Download Logic
+        // FIX 1: Added useCORS: true to fix blank images
         document.getElementById('downloadTicketBtn').onclick = async () => {
-            const canvas = await html2canvas(document.getElementById('ticket-to-download'), { scale: 2, backgroundColor: '#111' });
-            const link = document.createElement('a');
-            link.download = 'IGNITE-TICKET.jpg';
-            link.href = canvas.toDataURL('image/jpeg');
-            link.click();
+            const element = document.getElementById('ticket-to-download');
+            try {
+                const canvas = await html2canvas(element, { 
+                    scale: 2, 
+                    useCORS: true,  // Critical for external images
+                    allowTaint: true,
+                    backgroundColor: '#111' 
+                });
+                const link = document.createElement('a');
+                link.download = 'IGNITE-TICKET.jpg';
+                link.href = canvas.toDataURL('image/jpeg');
+                link.click();
+            } catch (error) {
+                console.error("Ticket generation failed:", error);
+                alert("Could not generate ticket image. Please take a screenshot.");
+            }
         };
         
         document.getElementById('downloadReceiptBtn').onclick = async () => {
             const element = document.getElementById('receipt-to-download');
             element.classList.remove('hidden');
-            const canvas = await html2canvas(element, { scale: 2, backgroundColor: '#ffffff' });
-            element.classList.add('hidden');
-            const link = document.createElement('a');
-            link.download = 'IGNITE-RECEIPT.jpg';
-            link.href = canvas.toDataURL('image/jpeg');
-            link.click();
+            try {
+                const canvas = await html2canvas(element, { 
+                    scale: 2, 
+                    backgroundColor: '#ffffff',
+                    useCORS: true 
+                });
+                element.classList.add('hidden');
+                const link = document.createElement('a');
+                link.download = 'IGNITE-RECEIPT.jpg';
+                link.href = canvas.toDataURL('image/jpeg');
+                link.click();
+            } catch (error) {
+                console.error("Receipt generation failed:", error);
+            }
         };
 
         document.getElementById('downloadPdfBtn').onclick = async () => {
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF();
             
-            const ticketCanvas = await html2canvas(document.getElementById('ticket-to-download'), { scale: 2 });
-            
-            const receiptEl = document.getElementById('receipt-to-download');
-            receiptEl.classList.remove('hidden');
-            const receiptCanvas = await html2canvas(receiptEl, { scale: 2 });
-            receiptEl.classList.add('hidden');
-            
-            pdf.addImage(ticketCanvas.toDataURL('image/png'), 'PNG', 10, 10, 190, 80);
-            pdf.addImage(receiptCanvas.toDataURL('image/png'), 'PNG', 10, 100, 190, 100);
-            pdf.save('IGNITE-PASS.pdf');
+            const ticketElement = document.getElementById('ticket-to-download');
+            const receiptElement = document.getElementById('receipt-to-download');
+            receiptElement.classList.remove('hidden');
+
+            try {
+                const ticketCanvas = await html2canvas(ticketElement, { scale: 2, useCORS: true });
+                const receiptCanvas = await html2canvas(receiptElement, { scale: 2, useCORS: true });
+                
+                receiptElement.classList.add('hidden');
+                
+                pdf.addImage(ticketCanvas.toDataURL('image/png'), 'PNG', 10, 10, 190, 80);
+                pdf.addImage(receiptCanvas.toDataURL('image/png'), 'PNG', 10, 100, 190, 100);
+                pdf.save('IGNITE-PASS.pdf');
+            } catch (error) {
+                 console.error("PDF generation failed:", error);
+                 alert("Could not generate PDF. Please try downloading the JPG instead.");
+            }
         };
 
         // Mobile Menu
@@ -740,7 +769,6 @@
         AOS.init({ once: true, offset: 50, duration: 800 });
 
         // 2. Initialize Vanta.js (3D Background)
-        // Note: This requires WebGL support in the browser
         document.addEventListener("DOMContentLoaded", function() {
             try {
                 VANTA.NET({
@@ -754,7 +782,7 @@
                     scaleMobile: 1.00,
                     color: 0x16FF00,       // Neon Green
                     backgroundColor: 0x0B120E, // Dark Green/Black
-                    points: 10.00,         // Lower points for performance on mobile
+                    points: 10.00,         
                     maxDistance: 22.00,
                     spacing: 18.00
                 })
